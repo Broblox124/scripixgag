@@ -1,10 +1,12 @@
 -- Scripix ver 1.0.0 for Grow a Garden
 -- Simplified GUI script to test logo and panel
 -- Created for Roblox Luau, compatible with Summer Update (June 22, 2025)
+-- Hostable on GitHub for loadstring
 
 -- Services
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
+local HttpService = game:GetService("HttpService")
 
 -- Local player
 local player = Players.LocalPlayer
@@ -12,28 +14,41 @@ local playerGui = player.PlayerGui
 
 -- Configuration
 local CONFIG = {
-    LogoImageId = "rbxassetid://188078643" -- Fallback Roblox logo; replace with your rbxassetid
+    LogoImageId = "rbxassetid://99764942615873", -- NatHub's icon as fallback; replace with your logo's rbxassetid
+    GameId = 7436755782 -- Grow a Garden's GameId
 }
 
 -- Debug print
-print("Scripix script started!")
+print("Scripix script started! GameId: " .. tostring(game.GameId))
+
+-- Verify game
+if game.GameId ~= CONFIG.GameId then
+    StarterGui:SetCore("SendNotification", {
+        Title = "Scripix Error",
+        Text = "This script is for Grow a Garden only!",
+        Duration = 10
+    })
+    print("Wrong game! Expected GameId: " .. CONFIG.GameId .. ", Got: " .. game.GameId)
+    return
+end
 
 -- GUI Setup
 local function createGui()
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "ScripixGui"
     screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     screenGui.Parent = playerGui
-    print("ScreenGui created!")
+    print("ScreenGui created and parented to PlayerGui")
 
     -- Logo (small square, toggles panel)
     local logo = Instance.new("ImageButton")
     logo.Size = UDim2.new(0, 50, 0, 50)
     logo.Position = UDim2.new(0, 10, 0, 10)
     logo.Image = CONFIG.LogoImageId
-    logo.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red background to make logo visible if image fails
+    logo.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red background for visibility
     logo.Parent = screenGui
-    print("Logo created!")
+    print("Logo created with ImageId: " .. CONFIG.LogoImageId)
 
     -- Main panel (hidden by default)
     local panel = Instance.new("Frame")
@@ -63,13 +78,24 @@ local function createGui()
     minimize.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
     minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
     minimize.Parent = panel
-    print("Panel created!")
+    print("Panel and components created")
 
     return screenGui, logo, panel, minimize
 end
 
 -- Main script
 local function main()
+    -- Verify PlayerGui
+    if not playerGui then
+        print("PlayerGui not found!")
+        StarterGui:SetCore("SendNotification", {
+            Title = "Scripix Error",
+            Text = "PlayerGui not found. Try again later.",
+            Duration = 10
+        })
+        return
+    end
+
     local screenGui, logo, panel, minimize = createGui()
 
     -- Toggle panel via logo
@@ -88,6 +114,7 @@ local function main()
     StarterGui:SetCore("SendNotification", {
         Title = "Scripix ver 1.0.0",
         Text = "Script loaded! Click the red square/logo to open the panel.",
+        Icon = CONFIG.LogoImageId,
         Duration = 5
     })
     print("Notification sent!")
@@ -98,8 +125,9 @@ local success, err = pcall(main)
 if not success then
     warn("Error in script: " .. err)
     StarterGui:SetCore("SendNotification", {
-        Title = "Error",
+        Title = "Scripix Error",
         Text = "Script failed: " .. err,
+        Icon = CONFIG.LogoImageId,
         Duration = 10
     })
     print("Error: " .. err)
